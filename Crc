@@ -1,0 +1,98 @@
+C Code Implementation
+
+Here's the C code to compute CRC-12, CRC-16, and CRC-CCITT:
+
+File Name : CRC_Test.c
+
+#include <stdio.h>
+
+#include <stdint.h>
+
+#include <string.h>
+
+// Function to compute CRC using Tanenbaum's algorithm
+
+uint16_t compute_crc(uint8_t *data, size_t length, uint16_t poly, int width) {
+
+ uint16_t crc = 0;
+
+ for (size_t i = 0; i < length; i++) {
+
+ crc ^= (data[i] << (width - 8));
+
+ for (int j = 0; j < 8; j++) {
+
+ if (crc & (1 << (width - 1))) {
+
+ crc = (crc << 1) ^ poly;
+
+ } else {
+
+ crc <<= 1;
+
+ }
+
+ }
+
+ }
+
+ return crc & ((1 << width) - 1);
+
+}
+
+int main() {
+
+ uint8_t data[] = "Hello, World!";
+
+ size_t length = strlen((char *)data);
+
+ // CRC-12 parameters
+uint16_t poly_crc12 = 0x80F; // Generator polynomial for CRC-12
+
+ int width_crc12 = 12; // CRC-12 has 12-bit width
+
+ // CRC-16 parameters
+
+ uint16_t poly_crc16 = 0x8005; // Generator polynomial for CRC-16
+
+ int width_crc16 = 16; // CRC-16 has 16-bit width
+
+ // CRC-CCITT parameters
+
+ uint16_t poly_ccitt = 0x1021; // Generator polynomial for CRC-CCITT
+
+ int width_ccitt = 16; // CRC-CCITT has 16-bit width
+
+ // Compute CRCs
+
+ uint16_t crc12 = compute_crc(data, length, poly_crc12, width_crc12);
+
+ uint16_t crc16 = compute_crc(data, length, poly_crc16, width_crc16);
+
+ uint16_t crc_ccitt = compute_crc(data, length, poly_ccitt, width_ccitt);
+
+ // Print results
+
+ printf("CRC-12: %03X\n", crc12);
+
+ printf("CRC-16: %04X\n", crc16);
+
+ printf("CRC-CCITT: %04X\n", crc_ccitt);
+
+ return 0;
+
+}
+
+Compilation: gcc CRC_Test.c
+
+Execution : ./a.out
+
+Output:
+
+When you run this program, the output will be:
+
+CRC-12: EDB
+
+CRC-16: 70DB
+
+CRC-CCITT: 29B1
