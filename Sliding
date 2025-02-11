@@ -1,0 +1,166 @@
+#include <stdio.h>
+
+#include <stdlib.h>
+
+#include <stdbool.h>
+
+#include <unistd.h>
+
+#include <pthread.h>
+
+#include <time.h>
+
+#define MAX_SEQ 7 // Maximum sequence number (window size is 
+
+MAX_SEQ+1)
+
+#define TIMEOUT 2 // Timeout duration in seconds
+
+typedef struct {
+
+ int data;
+
+ int seq_num;
+
+} frame;
+
+int sender_base = 0;
+
+int next_seq_num = 0;
+
+int receiver_base = 0;
+
+bool ack_received[MAX_SEQ + 1] = {false};
+
+pthread_mutex_t lock;
+
+void send_frame(int frame_num) 
+
+{
+
+ pthread_mutex_lock(&lock);
+
+ if (next_seq_num < sender_base + MAX_SEQ + 1) 
+
+ {
+
+ printf("Sending frame %d\n", frame_num);
+
+ frame f = {rand() % 100, frame_num};
+
+ // Simulate sending frame
+
+ sleep(1);
+
+ printf("Frame %d sent\n", f.seq_num);
+
+ next_seq_num++;
+
+ } 
+
+ else 
+
+ {
+
+ printf("Window is full. Frame %d is waiting.\n", 
+
+frame_num);
+
+ 
+
+ }
+
+ pthread_mutex_unlock(&lock);
+
+}
+void *acknowledge(void *arg) 
+
+{
+
+ int frame_num = *((int *)arg);
+
+ sleep(rand() % TIMEOUT); // Simulate random delay
+
+ // Simulate 90% success rate
+
+ if (rand() % 100 < 90) 
+
+ {
+
+ pthread_mutex_lock(&lock);
+
+ ack_received[frame_num] = true;
+
+ printf("Acknowledged frame %d\n", frame_num);
+
+ while (ack_received[sender_base]) 
+
+ {
+
+ sender_base++;
+
+ if (sender_base == next_seq_num) break;
+
+ }
+
+ pthread_mutex_unlock(&lock);
+
+ } 
+
+ else 
+
+ {
+
+ printf("Frame %d lost. Resending...\n", frame_num);
+
+ send_frame(frame_num); // Resend the lost frame
+
+ }
+
+ return NULL;
+
+}
+
+void *send_thread(void *arg) 
+
+{
+
+ for (int i = 0; i < 10; i++) 
+
+ {
+
+ send_frame(i);
+
+ int *arg = malloc(sizeof(*arg));
+
+ *arg = i;
+
+ pthread_t ack_thread;
+
+ pthread_create(&ack_thread, NULL, acknowledge, arg);
+
+ sleep(1);
+
+ }
+
+ return NULL;
+
+}
+
+int main() 
+
+{
+
+ srand(time(0));
+
+ pthread_mutex_init(&lock, NULL);
+
+ pthread_t sender;
+
+ pthread_create(&sender, NULL, send_thread, NULL);
+
+ pthread_join(sender, NULL);
+
+ pthread_mutex_destroy(&lock);
+return 0;
+}
