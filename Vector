@@ -1,0 +1,80 @@
+// file name : distance_vector.c
+
+#include <stdio.h>
+
+#define INF 9999
+
+#define MAX 10
+
+void distanceVectorRouting(int n, int costMatrix[MAX][MAX]) {
+
+ int distance[MAX], nextHop[MAX][MAX], i, j, k;
+
+ for (i = 0; i < n; i++) {
+
+ for (j = 0; j < n; j++) {
+
+ distance[j] = costMatrix[i][j];
+
+ nextHop[i][j] = j;
+
+ }
+
+ for (k = 0; k < n; k++) {
+
+ for (j = 0; j < n; j++) {
+
+ if (distance[j] > costMatrix[i][k] + costMatrix[k][j]) {
+
+ distance[j] = costMatrix[i][k] + costMatrix[k][j];
+
+ nextHop[i][j] = nextHop[i][k];
+
+ }
+
+ }
+
+ }
+
+ printf("Routing table for router %d:\n", i);
+
+ printf("Destination\tNext Hop\tDistance\n");
+
+ for (j = 0; j < n; j++) {
+
+ printf("%d\t\t%d\t\t%d\n", j, nextHop[i][j], distance[j]);
+
+ }
+
+ printf("\n");
+
+ }
+
+}
+
+int main() {
+
+ int n, i, j;
+
+ int costMatrix[MAX][MAX];
+
+ printf("Enter the number of routers: ");
+
+ scanf("%d", &n);
+
+ printf("Enter the cost matrix (enter 9999 for infinite distance):\n");
+
+ for (i = 0; i < n; i++) {
+
+ for (j = 0; j < n; j++) {
+scanf("%d", &costMatrix[i][j]);
+
+ }
+
+ }
+
+ distanceVectorRouting(n, costMatrix);
+
+ return 0;
+
+}
